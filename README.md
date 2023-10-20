@@ -8,7 +8,7 @@ The Auto Video Editor tool extracts audio from an input video file and sets up a
 areas where there's vocal activity. The following image shows an example of automatically detected audio events 
 (note each event is padded by 0.25 seconds):
 
-![The areas highlighted in pink are automatically detected audio events. The areas not highlighted will be removed](https://github.com/mysterylektro/AutoVideoEditor/blob/master/resources/example_audio_detection.png?raw=true)
+[The areas highlighted in pink are automatically detected audio events. The areas not highlighted will be removed](https://github.com/mysterylektro/AutoVideoEditor/blob/master/resources/example_audio_detection.png?raw=true)
 
 After identifying these segments, the tool provides a configurable padding buffer to
 each segment in order to retain some continuity of context between cuts. By splicing these segments together, 
@@ -49,14 +49,14 @@ To use the tool with all of the default options, run the following command from 
 The output file does not have to exist; the tool will generate the video. To modify how the tool operates, 
 use the following options:
 
-| Option                 | Description                                                                                                            |
-|:-----------------------|:-----------------------------------------------------------------------------------------------------------------------|
-| -p, --padding          | Amount of time of a detected audio event (on both sides) to pad for context. (default = 0.25 s)                        |
-| -sf, --start-freq      | The start frequency of audio events of interest. This is typically the narrator's vocal range (default = 200 Hz)       |
-| -ef, --end-freq        | The end frequency of audio events of interest. This is typically the narrator's vocal range (default = 3000 Hz)        |
-| -r, --resolution       | The minimum audio event length. (default = 0.05 seconds)                                                               |
-| -o, --overlap          | Must be >= 0 and < 1. A higher value is needed when identifying very short audio events (default=0.5)                  |
-| -z, --zero-pad-percent | Must be >= 0. This value helps to reduce scalloping loss when identifying narrow frequency content. (default=100)      |
-| -c, --config           | Unused parameter in V0.0.1. This will be used in the future to define configuration parameters for additional features |
+| Option                 | Description                                                                                                                                                                             |
+|:-----------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| -p, --padding          | Amount of time of a detected audio event (on both sides) to pad for context. (default = 0.25 s)                                                                                         |
+| -sf, --start-freq      | The start frequency of audio events of interest. This is typically the narrator's vocal range (default = 200 Hz)                                                                        |
+| -ef, --end-freq        | The end frequency of audio events of interest. This is typically the narrator's vocal range (default = 3000 Hz)                                                                         |
+| -r, --resolution       | The minimum audio event length. (default = 0.05 seconds)                                                                                                                                |
+| -o, --overlap          | Must be 0 <= overlap < 1. A higher value is needed when identifying very short audio events (default=0.5)                                                                               |
+| -z, --zero-pad-percent | Must be 0 <= zero-pad-percent. Note this value is in percentage (i.e. 100 = 100 %). This value helps to reduce scalloping loss when identifying narrow frequency content. (default=100) |
+| -c, --config           | Unused parameter in V0.0.1. This will be used in the future to define configuration parameters for additional features                                                                  |
 
 

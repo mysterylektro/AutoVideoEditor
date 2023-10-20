@@ -12,7 +12,7 @@ areas where there's vocal activity. The following image shows an example of auto
 
 After identifying these segments, the tool provides a configurable padding buffer to
 each segment in order to retain some continuity of context between cuts. By splicing these segments together, 
-tool automatically removes areas without any audible activity.
+the tool automatically removes areas without any audible activity.
 
 The following video shows an example of the tool's capabilities, using a [video](https://www.youtube.com/watch?v=DpuKO_rsptI
 ) taken from [BuddyCatan's channel](https://www.youtube.com/@buddycatan):

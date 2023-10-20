@@ -1,3 +1,9 @@
+# Prerequisites
+
+This tool relies on ffmpeg (https://www.ffmpeg.org/).
+
+This website provides step-by-step instructions: https://www.geeksforgeeks.org/how-to-install-ffmpeg-on-windows/
+
 # Installation
 
 To install this tool, you will need to do the following:

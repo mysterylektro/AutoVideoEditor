@@ -2,7 +2,7 @@
 
 This tool relies on ffmpeg (https://www.ffmpeg.org/).
 
-This website provides step-by-step instructions: https://www.geeksforgeeks.org/how-to-install-ffmpeg-on-windows/
+This website provides step-by-step instructions on how to install ffmpeg: https://www.geeksforgeeks.org/how-to-install-ffmpeg-on-windows/
 
 # Installation
 

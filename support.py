@@ -19,6 +19,7 @@ from scipy.signal import spectrogram, decimate, fftconvolve, hilbert
 import numpy as np
 from moviepy.editor import *
 import argparse
+from functools import reduce
 
 parser = argparse.ArgumentParser(description="Automatically remove silence from a video.")
 parser.add_argument('input_file')
@@ -30,10 +31,20 @@ parser.add_argument('-c', '--config')
 parser.add_argument('-r', '--resolution', type=float)
 parser.add_argument('-o', '--overlap', type=float)
 parser.add_argument('-z', '--zero-pad-percent', type=float)
+parser.add_argument('-d', '--decimate', type=int)
+
+
+def combine_overlaps(ranges):
+    return reduce(
+        lambda acc, el: acc[:-1:] + [(min(*acc[-1], *el), max(*acc[-1], *el))]
+        if acc[-1][1] >= el[0]
+        else acc + [el],
+        ranges[1::],
+        ranges[0:1],
+    )
 
 
 def handle_defaults(args: argparse.ArgumentParser):
-
     if args.padding is None:
         args.padding = 0.25
 
@@ -44,7 +55,7 @@ def handle_defaults(args: argparse.ArgumentParser):
         args.end_freq = 3000.
 
     if args.resolution is None:
-        args.resolution = 0.05  # fft duration
+        args.resolution = 0.05  # fft block duration
 
     if args.overlap is None:
         args.overlap = 0.50
@@ -85,55 +96,69 @@ def process(func, title, args=None, kwargs=None):
         return x.join()
 
 
-def decimate_data(data, fs, interval: int):
+def decimate_data(data, fs, args):
+    interval = args.decimate
+
+    if interval is None:
+        """
+        No decimation interval is defined. Check the desired end frequency, and determine what the maximum
+        decimation factor can be. Note this may not be desirable for future analysis 
+        (i.e. there may be other sounds that are in a higher frequency range that are important that will get 
+        filtered out)
+        """
+        # Multiply the sample rate by 10 % to ensure the end frequency lies well outside the Nyquist criterion
+        interval = int(np.floor(1.1 * fs / (2 * args.end_freq)))
+
     output_data = decimate(data, interval)
-    return output_data, fs/interval
+    return output_data, fs / interval
 
 
 def compute_spectrogram(data, fs, args):
     # Create a spectrogram of the first channel of data
-    n_res = args.resolution * (1 + args.overlap)
-    nperseg = int(n_res * fs)
-    n_overlap = int(nperseg * args.overlap)
+    nperseg = int(args.resolution * fs / args.overlap)
+    noverlap = int(nperseg * args.overlap)
     nfft = next_power_of_2(int(nperseg) + int(args.zero_padding_percent * nperseg / 100))
 
     f, t, Sxx = spectrogram(data,
                             fs,
                             nperseg=nperseg,
                             nfft=nfft,
-                            noverlap=n_overlap,
+                            noverlap=noverlap,
                             scaling='density',
                             mode='magnitude')
 
-    resolution = t[1] - t[0]  # Todo: Fix this
+    output_resolution = t[1] - t[0]  # This is to account for rounding errors in the integer math
 
     start_idx = (np.abs(f - args.start_freq)).argmin()
     end_idx = (np.abs(f - args.end_freq)).argmin()
 
-    return np.sum(Sxx[start_idx:end_idx, :], axis=0), resolution
+    return np.sum(Sxx[start_idx:end_idx, :], axis=0), output_resolution
 
 
 def find_segments(energy_in_band, resolution, threshold=3.0, padding_width=0.25):
-    # Find signals above 5 dB threshold
-    indices = np.argwhere(energy_in_band > 3.0).flatten()
-    start_indices = indices - int(padding_width/resolution)
+    # Find signals above threshold
+    indices = np.argwhere(energy_in_band >= threshold).flatten()
+    start_indices = indices - int(padding_width / resolution)
     start_indices[start_indices < 0] = 0
     end_indices = indices + int(padding_width / resolution)
     end_indices[end_indices > len(energy_in_band)] = len(energy_in_band)
-    interesting_indices = set()
-    for start_idx, end_idx in zip(start_indices, end_indices):
-        interesting_indices = interesting_indices.union(set(range(int(start_idx), int(end_idx))))
 
-    interesting_indices = np.array(list(interesting_indices))
-    interesting_indices.sort()
+    return combine_overlaps(list(zip(start_indices, end_indices)))
 
-    contiguous_segments = np.split(interesting_indices, np.where(np.diff(interesting_indices) != 1)[0] + 1)
-    segments = [[segment[0]*resolution, segment[-1]*resolution] for segment in contiguous_segments]
+    # interesting_indices = set()
+    # for start_idx, end_idx in zip(start_indices, end_indices):
+    #     interesting_indices = interesting_indices.union(set(range(int(start_idx), int(end_idx))))
+    #
+    # interesting_indices = np.array(list(interesting_indices))
+    # interesting_indices.sort()
+    #
+    # contiguous_segments = np.split(interesting_indices, np.where(np.diff(interesting_indices) != 1)[0] + 1)
+    # segments2 = [[segment[0] * resolution, segment[-1] * resolution] for segment in contiguous_segments]
     return segments
 
 
-def next_power_of_2(x):
-    return 1 if x == 0 else 2**(x - 1).bit_length()
+def next_power_of_2(x: int):
+    return 1 if x == 0 else 2 ** (x - 1).bit_length()
 
 
 def convert_video_to_audio_ffmpeg(video_file, audio_file_out):
@@ -145,11 +170,11 @@ def convert_video_to_audio_ffmpeg(video_file, audio_file_out):
                         stderr=subprocess.STDOUT)
 
 
-def normalize(energy_in_band, resolution):
-
+def normalize(energy_in_band, resolution, args):
     # Split window normalizer
-    window_length = 1.0
-    window_gap = 0.05
+    window_length = 5*args.padding  # seconds
+    window_gap = args.padding  # seconds
+
     window = np.ones(int(window_length / resolution), dtype=float)
     gap_width = int(window_gap / resolution)
     if len(window) % 2 == 1:
@@ -169,9 +194,9 @@ def normalize(energy_in_band, resolution):
     return energy_in_band
 
 
-def extract_clips(video_file, segments):
+def extract_clips(video_file, segments, resolution):
     main_clip = VideoFileClip(video_file)
-    video_segments = [main_clip.subclip(s[0], s[1]) for s in segments]
+    video_segments = [main_clip.subclip(s[0]*resolution, s[1]*resolution) for s in segments]
 
     return video_segments
 
@@ -184,7 +209,7 @@ def read_mp3(f, normalized=False):
     if a.channels == 2:
         y = y.reshape((-1, 2))
     if normalized:
-        return a.frame_rate, np.float32(y) / 2**15
+        return a.frame_rate, np.float32(y) / 2 ** 15
     else:
         return a.frame_rate, y
 

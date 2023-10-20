@@ -34,19 +34,19 @@ if __name__ == "__main__":
     fs_orig, data_orig = process(read_mp3, "Reading Audio...", args=(audio_file,))
 
     # Decimate audio to reduce sample rate (This assumes 44.1 kHz input audio)
-    data, fs = process(decimate_data, "Decimating Signal...", args=(data_orig[:, 0], fs_orig, 4))
+    data, fs = process(decimate_data, "Decimating Signal...", args=(data_orig[:, 0], fs_orig, args))
 
     # Create a spectrogram of the first channel of data and generate the energy in the band
     energy_in_band, resolution = process(compute_spectrogram, "Computing Spectrogram...", args=(data, fs, args))
 
     # Normalize Data
-    energy_in_band = process(normalize, "Normalizing Energy Data...", args=(energy_in_band, resolution))
+    energy_in_band = process(normalize, "Normalizing Energy Data...", args=(energy_in_band, resolution, args))
 
     # Find interesting segments
     segments = process(find_segments, "Finding Interesting Segments...", args=(energy_in_band, resolution))
 
     # Extract video segments from primary video file and stitch them together into output product
-    clips = process(extract_clips, "Extracting clips...", args=(args.input_file, segments))
+    clips = process(extract_clips, "Extracting clips...", args=(args.input_file, segments, resolution))
     output_video = concatenate_videoclips(clips)
     output_video.write_videofile(args.output_file, verbose=False)
 

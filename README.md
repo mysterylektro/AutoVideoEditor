@@ -25,9 +25,9 @@ In essence, this eliminated around 13 minutes of inactive content, roughly a qua
 
 # Prerequisites
 
-This tool relies on ffmpeg (https://www.ffmpeg.org/).
+This tool relies on ffmpeg (https://www.ffmpeg.org/), and has only been tested on Windows 10.
 
-This website provides step-by-step instructions on how to install ffmpeg: https://www.geeksforgeeks.org/how-to-install-ffmpeg-on-windows/
+This website provides step-by-step instructions on how to install ffmpeg on windows: https://www.geeksforgeeks.org/how-to-install-ffmpeg-on-windows/
 
 # Installation
 

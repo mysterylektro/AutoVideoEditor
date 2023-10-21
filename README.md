@@ -60,9 +60,3 @@ use the following options:
 | -li, --lead-in    | Amount of time (in seconds) to ensure the tool does not cut in the beginning of the video. (default=None)                                                         |
 | -lo, --lead-out   | Amount of time (in seconds) to ensure the tool does not cut at the end of the video. (default=None)                                                               |
 | -c, --config      | Unused parameter in V0.0.2. This will be used in the future to define configuration parameters for additional features                                            |
-
-parser.add_argument('-t', '--threshold', type=float)
-parser.add_argument('-bg', '--band-gap', type=float)
-parser.add_argument('-li', '--lead-in', type=float)
-parser.add_argument('-lo', '--lead-out', type=float)
-

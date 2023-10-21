@@ -15,7 +15,7 @@ import subprocess
 import time
 from alive_progress import alive_bar
 from threading import Thread
-from scipy.signal import spectrogram, decimate, fftconvolve, hilbert, butter, lfilter
+from scipy.signal import decimate, fftconvolve, hilbert, butter, lfilter
 import numpy as np
 from moviepy.editor import *
 import argparse
@@ -113,28 +113,6 @@ def decimate_data(data, fs, args):
 
     output_data = decimate(data, interval)
     return output_data, fs / interval
-
-
-def compute_spectrogram(data, fs, args):
-    # Create a spectrogram of the first channel of data
-    nperseg = int(args.resolution * fs / args.overlap)
-    noverlap = int(nperseg * args.overlap)
-    nfft = next_power_of_2(int(nperseg) + int(args.zero_padding_percent * nperseg / 100))
-
-    f, t, Sxx = spectrogram(data,
-                            fs,
-                            nperseg=nperseg,
-                            nfft=nfft,
-                            noverlap=noverlap,
-                            scaling='density',
-                            mode='magnitude')
-
-    output_resolution = t[1] - t[0]  # This is to account for rounding errors in the integer math
-
-    start_idx = (np.abs(f - args.start_freq)).argmin()
-    end_idx = (np.abs(f - args.end_freq)).argmin()
-
-    return np.sum(Sxx[start_idx:end_idx, :], axis=0), output_resolution
 
 
 def find_segments(processed_data, fs, args):

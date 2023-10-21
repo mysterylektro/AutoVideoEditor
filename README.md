@@ -49,16 +49,19 @@ To use the tool with all of the default options, run the following command from 
 The output file does not have to exist; the tool will generate the video. To modify how the tool operates, 
 use the following options:
 
-| Option                 | Description                                                                                                                                                                             |
-|:-----------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| -p, --padding          | Amount of time of a detected audio event (on both sides) to pad for context. (default = 0.25 s)                                                                                         |
-| -d, --decimate         | Integer value to downsample audio. If left undefined, the program will attempt to automatically determine a suitable decimation value based on the end frequency.                       |
-| -sf, --start-freq      | The start frequency of audio events of interest. This is typically the narrator's vocal range (default = 200 Hz)                                                                        |
-| -ef, --end-freq        | The end frequency of audio events of interest. This is typically the narrator's vocal range (default = 3000 Hz)                                                                         |
-| -r, --resolution       | The minimum audio event length. (default = 0.05 seconds)                                                                                                                                |
-| -o, --overlap          | Must be 0 <= overlap < 1. A higher value is needed when identifying very short audio events (default=0.5)                                                                               |
-| -z, --zero-pad-percent | Must be 0 <= zero-pad-percent. Note this value is in percentage (i.e. 100 = 100 %). This value helps to reduce scalloping loss when identifying narrow frequency content. (default=100) |
-| -c, --config           | Unused parameter in V0.0.1. This will be used in the future to define configuration parameters for additional features                                                                  |
+| Option             | Description                                                                                                                                                       |
+|:-------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| -p, --padding      | Amount of time of a detected audio event (on both sides) to pad for context. (default = 0.25 s)                                                                   |
+| -d, --decimate     | Integer value to downsample audio. If left undefined, the program will attempt to automatically determine a suitable decimation value based on the end frequency. |
+| -sf, --start-freq  | The start frequency of audio events of interest. This is typically the narrator's vocal range (default = 200 Hz)                                                  |
+| -ef, --end-freq    | The end frequency of audio events of interest. This is typically the narrator's vocal range (default = 3000 Hz)                                                   |
+| -bg, --band-gap    | Buffer around vocal range to find out-of-band energy. (default  = 50 Hz)                                                                                          |
+| -li, --lead-in     | Amount of time (in seconds) to ensure the tool does not cut in the beginning of the video. (default=None)                                                         |
+| -lo, --lead-out    | Amount of time (in seconds) to ensure the tool does not cut at the end of the video. (default=None)                                                               |
+| -c, --config       | Unused parameter in V0.0.1. This will be used in the future to define configuration parameters for additional features                                            |
 
-
+parser.add_argument('-t', '--threshold', type=float)
+parser.add_argument('-bg', '--band-gap', type=float)
+parser.add_argument('-li', '--lead-in', type=float)
+parser.add_argument('-lo', '--lead-out', type=float)
 

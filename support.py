@@ -15,11 +15,12 @@ import subprocess
 import time
 from alive_progress import alive_bar
 from threading import Thread
-from scipy.signal import spectrogram, decimate, fftconvolve, hilbert
+from scipy.signal import spectrogram, decimate, fftconvolve, hilbert, butter, lfilter
 import numpy as np
 from moviepy.editor import *
 import argparse
 from functools import reduce
+
 
 parser = argparse.ArgumentParser(description="Automatically remove silence from a video.")
 parser.add_argument('input_file')
@@ -27,11 +28,12 @@ parser.add_argument('output_file')
 parser.add_argument('-p', '--padding', type=float)
 parser.add_argument('-sf', '--start-freq', type=float)
 parser.add_argument('-ef', '--end-freq', type=float)
-parser.add_argument('-c', '--config')
-parser.add_argument('-r', '--resolution', type=float)
-parser.add_argument('-o', '--overlap', type=float)
-parser.add_argument('-z', '--zero-pad-percent', type=float)
 parser.add_argument('-d', '--decimate', type=int)
+parser.add_argument('-t', '--threshold', type=float)
+parser.add_argument('-bg', '--band-gap', type=float)
+parser.add_argument('-li', '--lead-in', type=float)
+parser.add_argument('-lo', '--lead-out', type=float)
+parser.add_argument('-c', '--config')
 
 
 def combine_overlaps(ranges):
@@ -54,17 +56,11 @@ def handle_defaults(args: argparse.ArgumentParser):
     if args.end_freq is None:
         args.end_freq = 3000.
 
-    if args.resolution is None:
-        args.resolution = 0.05  # fft block duration
+    if args.threshold is None:
+        args.threshold = 5.0
 
-    if args.overlap is None:
-        args.overlap = 0.50
-    else:
-        if args.overlap >= 1 or args.overlap < 0:
-            raise ValueError(f"Invalid overlap value {args.overlap}\nValid range [0, 1)")
-
-    if args.zero_pad_percent is None:
-        args.zero_padding_percent = 100
+    if args.band_gap is None:
+        args.band_gap = 50.0
 
 
 class ThreadWithReturnValue(Thread):
@@ -107,7 +103,7 @@ def decimate_data(data, fs, args):
         filtered out)
         """
         # Multiply the sample rate by 10 % to ensure the end frequency lies well outside the Nyquist criterion
-        interval = int(np.floor(1.1 * fs / (2 * args.end_freq)))
+        interval = int(np.floor(fs / (1.1*(2 * (args.end_freq + args.band_gap)))))
 
     output_data = decimate(data, interval)
     return output_data, fs / interval
@@ -135,26 +131,26 @@ def compute_spectrogram(data, fs, args):
     return np.sum(Sxx[start_idx:end_idx, :], axis=0), output_resolution
 
 
-def find_segments(energy_in_band, resolution, threshold=3.0, padding_width=0.25):
+def find_segments(processed_data, fs, args):
     # Find signals above threshold
-    indices = np.argwhere(energy_in_band >= threshold).flatten()
-    start_indices = indices - int(padding_width / resolution)
+    indices = np.argwhere(processed_data >= args.threshold).flatten()
+    start_indices = indices - int(args.padding * fs)
     start_indices[start_indices < 0] = 0
-    end_indices = indices + int(padding_width / resolution)
-    end_indices[end_indices > len(energy_in_band)] = len(energy_in_band)
+    start_indices = list(start_indices)
+    end_indices = indices + int(args.padding * fs)
+    end_indices[end_indices > len(processed_data)] = len(processed_data)
+    end_indices = list(end_indices)
+
+    # Add lead in and lead out values
+    if args.lead_in is not None:
+        start_indices.insert(0, 0)
+        end_indices.insert(0, int(args.lead_in * fs))
+
+    if args.lead_out is not None:
+        start_indices.append(len(processed_data) - int(args.lead_out * fs))
+        end_indices.append(len(processed_data))
 
     return combine_overlaps(list(zip(start_indices, end_indices)))
-
-    # interesting_indices = set()
-    # for start_idx, end_idx in zip(start_indices, end_indices):
-    #     interesting_indices = interesting_indices.union(set(range(int(start_idx), int(end_idx))))
-    #
-    # interesting_indices = np.array(list(interesting_indices))
-    # interesting_indices.sort()
-    #
-    # contiguous_segments = np.split(interesting_indices, np.where(np.diff(interesting_indices) != 1)[0] + 1)
-    # segments2 = [[segment[0] * resolution, segment[-1] * resolution] for segment in contiguous_segments]
-    return segments
 
 
 def next_power_of_2(x: int):
@@ -170,28 +166,25 @@ def convert_video_to_audio_ffmpeg(video_file, audio_file_out):
                         stderr=subprocess.STDOUT)
 
 
-def normalize(energy_in_band, resolution, args):
-    # Split window normalizer
-    window_length = 5*args.padding  # seconds
-    window_gap = args.padding  # seconds
+def process_audio(data, fs, args):
+    b, a = butter(5, [args.start_freq, args.end_freq], fs=fs, btype='bandpass')
+    band_pass_data = lfilter(b, a, data)
 
-    window = np.ones(int(window_length / resolution), dtype=float)
-    gap_width = int(window_gap / resolution)
-    if len(window) % 2 == 1:
-        gap_start, gap_end = (len(window) - 1) // 2 - gap_width // 2, (len(window) - 1) // 2 + gap_width // 2
-    else:
-        gap_start, gap_end = len(window) // 2 - gap_width // 2, len(window) // 2 + gap_width // 2
-    window[gap_start:gap_end] = 0.0
+    b, a = butter(5, [args.start_freq - args.band_gap, args.end_freq + args.band_gap], fs=fs, btype='bandstop')
+    band_stop_data = lfilter(b, a, data)
 
-    mean_data = fftconvolve(np.abs(energy_in_band), window, 'same') / np.sum(window)
-    energy_in_band /= mean_data
+    band_pass_data = np.abs(hilbert(band_pass_data))
+    band_stop_data = np.abs(hilbert(band_stop_data))
 
-    energy_in_band = 10 * np.log10(np.abs(energy_in_band))
+    # Normalize the in-band using the out-of-band data
+    window = np.ones(int(args.padding * fs), dtype=float)
+    mean_data = fftconvolve(band_stop_data, window, 'same') / np.sum(window)
+    band_pass_data /= mean_data
 
-    # Hilbert transform to get the envelope of the energy
-    energy_in_band = np.abs(hilbert(energy_in_band))
+    # Put in log space
+    band_pass_data = 10*np.log10(band_pass_data)
 
-    return energy_in_band
+    return band_pass_data
 
 
 def extract_clips(video_file, segments, resolution):

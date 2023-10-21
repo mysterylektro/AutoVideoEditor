@@ -177,7 +177,8 @@ def process_audio(data, fs, args):
     band_stop_data = np.abs(hilbert(band_stop_data))
 
     # Normalize the in-band using the out-of-band data
-    window = np.ones(int(args.padding * fs), dtype=float)
+    # Use a 1-second mean for now.
+    window = np.ones(int(fs), dtype=float)
     mean_data = fftconvolve(band_stop_data, window, 'same') / np.sum(window)
     band_pass_data /= mean_data
 

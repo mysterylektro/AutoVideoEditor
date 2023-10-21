@@ -21,6 +21,10 @@ from moviepy.editor import *
 import argparse
 from functools import reduce
 
+__major_version__ = 0
+__minor_version__ = 0
+__revision__ = 3
+__VERSION__ = f'Auto Video Editor {__major_version__}.{__minor_version__}.{__revision__}'
 
 parser = argparse.ArgumentParser(description="Automatically remove silence from a video.")
 parser.add_argument('input_file')
@@ -34,6 +38,8 @@ parser.add_argument('-bg', '--band-gap', type=float)
 parser.add_argument('-li', '--lead-in', type=float)
 parser.add_argument('-lo', '--lead-out', type=float)
 parser.add_argument('-c', '--config')
+parser.add_argument('-n', '--nice-audio', action='store_true')
+parser.add_argument('-v', '--version', action='version', version=__VERSION__)
 
 
 def combine_overlaps(ranges):
@@ -48,7 +54,7 @@ def combine_overlaps(ranges):
 
 def handle_defaults(args: argparse.ArgumentParser):
     if args.padding is None:
-        args.padding = 0.25
+        args.padding = 0.60
 
     if args.start_freq is None:
         args.start_freq = 200.
@@ -218,3 +224,11 @@ def write_mp3(f, sr, x, normalized=False):
         y = np.int16(x)
     song = pydub.AudioSegment(y.tobytes(), frame_rate=sr, sample_width=2, channels=channels)
     song.export(f, format="mp3", bitrate="320k")
+
+
+def nice_audio(audio_file):
+    fs, data = read_mp3(audio_file)
+    b, a = butter(5, [150, 10000], fs=fs, btype='bandpass')
+    data_out = lfilter(b, a, data[:, 0])
+    data_out /= np.max(np.abs(data_out))
+    write_mp3(audio_file, fs, data_out, normalized=True)

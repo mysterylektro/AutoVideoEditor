@@ -45,7 +45,16 @@ if __name__ == "__main__":
     # Extract video segments from primary video file and stitch them together into output product
     clips = process(extract_clips, "Extracting clips...", args=(args.input_file, segments, 1/fs))
     output_video = concatenate_videoclips(clips)
-    output_video.write_videofile(args.output_file, verbose=False)
+
+    # Write audio file
+    output_video.audio.write_audiofile(audio_file, fps=44100)
+
+    # If specified, filter audio file to remove rumbling and high frequency noise.
+    if args.nice_audio:
+        process(nice_audio, "Making audio nice...", args=(audio_file,))
+
+    # Write to video file
+    output_video.write_videofile(args.output_file, audio=audio_file, verbose=False)
 
     # Clean up temporary audio file
     os.remove(audio_file)

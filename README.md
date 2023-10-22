@@ -8,7 +8,9 @@ The Auto Video Editor tool extracts audio from an input video file and sets up a
 areas where there's vocal activity. The following image shows an example of automatically detected audio events 
 (note each event is padded by 0.25 seconds):
 
-![The areas highlighted in pink are automatically detected audio events. The areas not highlighted will be removed](https://github.com/mysterylektro/AutoVideoEditor/blob/master/resources/example_audio_detection.png?raw=true)
+<p align="center">
+  <img width="640" height="480" src="https://github.com/mysterylektro/AutoVideoEditor/blob/master/resources/example_audio_detection.png?raw=true">
+</p>
 
 After identifying these segments, the tool provides a configurable padding buffer to
 each segment in order to retain some continuity of context between cuts. By splicing these segments together, 

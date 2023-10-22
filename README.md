@@ -49,17 +49,17 @@ To use the tool with all the default options, run the following command from you
 The output file does not have to exist; the tool will generate the video. To modify how the tool operates, 
 use the following options:
 
-| Option            | Description                                                                                                                                                            |
-|:------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| -v, --version     | Print the current version of the tool.                                                                                                                                 |
-| -p, --padding     | Amount of time of a detected audio event (on both sides) to pad for context. (default = 0.60 s)                                                                        |
-| -d, --decimate    | Integer value to downsample audio. If left undefined, the program will attempt to automatically determine a suitable decimation value based on the end frequency.      |
-| -t, --threshold   | Value (in dB) the signal must be above the noise. (default = 5 dB)                                                                                                     |
-| -n, --nice-audio  | Flag to indicate if you'd like the tool to filter the output audio in the 150-10000 Hz range (this is useful if the video was recorded with lower quality microphones) |
-| --example-image   | Flag to indicate if you'd like the tool to generate an example image of the audio and at least one detected event.                                                     |
-| -sf, --start-freq | The start frequency of audio events of interest. This is typically the narrator's vocal range (default = 200 Hz)                                                       |
-| -ef, --end-freq   | The end frequency of audio events of interest. This is typically the narrator's vocal range (default = 3000 Hz)                                                        |
-| -bg, --band-gap   | Buffer around vocal range to find out-of-band energy. (default  = 50 Hz)                                                                                               |
-| -li, --lead-in    | Amount of time (in seconds) to ensure the tool does not cut in the beginning of the video. (default=None)                                                              |
-| -lo, --lead-out   | Amount of time (in seconds) to ensure the tool does not cut at the end of the video. (default=None)                                                                    |
-| -c, --config      | Unused parameter in V0.0.2. This will be used in the future to define configuration parameters for additional features                                                 |
+| Option                    | Description                                                                                                                                                            |
+|:--------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| -v, --version             | Print the current version of the tool.                                                                                                                                 |
+| -p, --padding [VALUE]     | Amount of time of a detected audio event (on both sides) to pad for context. (default = 0.60 s)                                                                        |
+| -d, --decimate [VALUE]    | Integer value to downsample audio. If left undefined, the program will attempt to automatically determine a suitable decimation value based on the end frequency.      |
+| -t, --threshold [VALUE]   | Value (in dB) the signal must be above the noise. (default = 5 dB)                                                                                                     |
+| -n, --nice-audio          | Flag to indicate if you'd like the tool to filter the output audio in the 150-10000 Hz range (this is useful if the video was recorded with lower quality microphones) |
+| --example-image           | Flag to indicate if you'd like the tool to generate an example image of the audio and at least one detected event.                                                     |
+| -sf, --start-freq [VALUE] | The start frequency of audio events of interest. This is typically the narrator's vocal range (default = 200 Hz)                                                       |
+| -ef, --end-freq [VALUE]   | The end frequency of audio events of interest. This is typically the narrator's vocal range (default = 3000 Hz)                                                        |
+| -bg, --band-gap [VALUE]   | Buffer around vocal range to find out-of-band energy. (default  = 50 Hz)                                                                                               |
+| -li, --lead-in [VALUE]    | Amount of time (in seconds) to ensure the tool does not cut in the beginning of the video. (default=None)                                                              |
+| -lo, --lead-out [VALUE]   | Amount of time (in seconds) to ensure the tool does not cut at the end of the video. (default=None)                                                                    |
+| -c, --config [VALUE]      | Unused parameter in V0.0.X This will be used in the future to define configuration parameters for additional features                                                  |

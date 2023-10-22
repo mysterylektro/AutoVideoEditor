@@ -19,8 +19,8 @@ The following video shows an example of the tool's capabilities, using a [video]
 
 https://youtu.be/17sp2HBmarY
 
-The original video duration was approximately 49 minutes, and the tool condensed this to a more concise 36 minutes. 
-In essence, this eliminated around 13 minutes of inactive content, roughly a quarter of the original video! 
+The original video duration was approximately 49 minutes, and the tool condensed this to a more concise 32 minutes. 
+In essence, this eliminated around 17 minutes of inactive (or uninteresting) content, roughly a third of the original video! 
 
 
 # Prerequisites

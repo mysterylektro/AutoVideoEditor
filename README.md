@@ -56,6 +56,7 @@ use the following options:
 | -d, --decimate    | Integer value to downsample audio. If left undefined, the program will attempt to automatically determine a suitable decimation value based on the end frequency.      |
 | -t, --threshold   | Value (in dB) the signal must be above the noise. (default = 5 dB)                                                                                                     |
 | -n, --nice-audio  | Flag to indicate if you'd like the tool to filter the output audio in the 150-10000 Hz range (this is useful if the video was recorded with lower quality microphones) |
+| --example-image   | Flag to indicate if you'd like the tool to generate an example image of the audio and at least one detected event.                                                     |
 | -sf, --start-freq | The start frequency of audio events of interest. This is typically the narrator's vocal range (default = 200 Hz)                                                       |
 | -ef, --end-freq   | The end frequency of audio events of interest. This is typically the narrator's vocal range (default = 3000 Hz)                                                        |
 | -bg, --band-gap   | Buffer around vocal range to find out-of-band energy. (default  = 50 Hz)                                                                                               |

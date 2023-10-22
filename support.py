@@ -20,10 +20,11 @@ import numpy as np
 from moviepy.editor import *
 import argparse
 from functools import reduce
+import matplotlib.pyplot as plt
 
 __major_version__ = 0
 __minor_version__ = 0
-__revision__ = 3
+__revision__ = 4
 __VERSION__ = f'Auto Video Editor {__major_version__}.{__minor_version__}.{__revision__}'
 
 parser = argparse.ArgumentParser(description="Automatically remove silence from a video.")
@@ -40,6 +41,7 @@ parser.add_argument('-lo', '--lead-out', type=float)
 parser.add_argument('-c', '--config')
 parser.add_argument('-n', '--nice-audio', action='store_true')
 parser.add_argument('-v', '--version', action='version', version=__VERSION__)
+parser.add_argument('--example-image', action='store_true')
 
 
 def combine_overlaps(ranges):
@@ -210,3 +212,37 @@ def nice_audio(audio_file):
     data_out = lfilter(b, a, data[:, 0])
     data_out /= np.max(np.abs(data_out))
     write_mp3(audio_file, fs, data_out, normalized=True)
+
+
+def export_example_image(audio_data, fs_orig, fs, segments, seed=None):
+    if seed:
+        np.random.seed(seed)
+
+    # Choose a segment at random:
+    segment = np.random.choice(np.array(segments, dtype="i,i"), 1).astype(object)[0]
+    start_index = segment[0] - int(fs*10)  # 10-second padding
+    start_index = 0 if start_index < 0 else start_index
+    start_time = start_index / fs
+
+    end_index = segment[1] + int(fs * 10)
+    end_index = len(audio_data) if start_index > len(audio_data) else end_index  # 10-second padding
+    end_time = end_index / fs
+
+    t = np.linspace(0, len(audio_data), len(audio_data)) / fs_orig
+    fig, ax = plt.subplots(1, 1)
+    ax.plot(t, audio_data, color='k')
+
+    ax.set_xlim(start_time, end_time)
+    for segment in segments:
+        ax.axvspan(segment[0] / fs, segment[1] / fs, alpha=0.5, color='blue')
+
+    ax.set_xlabel('time [s]')
+    ax.set_ylabel('amplitude')
+    fig.suptitle('Example Audio Detection')
+    plt.tight_layout()
+
+    output_dir = './resources/'
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    fig.savefig(f'{output_dir}example_audio_detection.png')

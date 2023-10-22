@@ -4,3 +4,4 @@ numpy==1.26.1
 scipy==1.11.3
 moviepy==1.0.3
 alive_progress==3.1.4
+matplotlib==3.8.0

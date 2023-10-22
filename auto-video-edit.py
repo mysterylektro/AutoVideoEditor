@@ -42,6 +42,10 @@ if __name__ == "__main__":
     # Find interesting segments
     segments = process(find_segments, "Finding Interesting Segments...", args=(processed_data, fs, args))
 
+    # Generate an example image if requested
+    if args.example_image:
+        process(export_example_image, "Generating Example Image... ", args=(data_orig[:, 0], fs_orig, fs, segments))
+
     # Extract video segments from primary video file and stitch them together into output product
     clips = process(extract_clips, "Extracting clips...", args=(args.input_file, segments, 1/fs))
     output_video = concatenate_videoclips(clips)

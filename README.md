@@ -17,7 +17,7 @@ the tool automatically removes areas without any audible activity.
 The following video shows an example of the tool's capabilities, using a [video](https://www.youtube.com/watch?v=DpuKO_rsptI
 ) taken from [BuddyCatan's channel](https://www.youtube.com/@buddycatan):
 
-https://youtu.be/BV_W_9zwCmw
+https://youtu.be/17sp2HBmarY
 
 The original video duration was approximately 49 minutes, and the tool condensed this to a more concise 36 minutes. 
 In essence, this eliminated around 13 minutes of inactive content, roughly a quarter of the original video! 

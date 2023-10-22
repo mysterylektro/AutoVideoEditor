@@ -221,7 +221,7 @@ def nice_audio(audio_file):
     write_mp3(audio_file, fs, data_out, normalized=True)
 
 
-def export_example_image(audio_data, fs_orig, fs, segments, seed=None):
+def export_example_image(audio_data, fs_orig, fs, segments, args, seed=None):
     if seed:
         np.random.seed(seed)
 
@@ -241,7 +241,8 @@ def export_example_image(audio_data, fs_orig, fs, segments, seed=None):
 
     ax.set_xlim(start_time, end_time)
     for segment in segments:
-        ax.axvspan(segment[0] / fs, segment[1] / fs, alpha=0.5, color='blue')
+        ax.axvspan(segment[0] / fs, segment[1] / fs, alpha=0.5, color='red')
+        ax.axvspan(segment[0] / fs + args.padding, segment[1] / fs - args.padding, alpha=0.55, color='red')
 
     ax.set_xlabel('time [s]')
     ax.set_ylabel('amplitude')

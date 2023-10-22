@@ -136,6 +136,13 @@ def find_segments(processed_data, fs, args):
         start_indices.append(len(processed_data) - int(args.lead_out * fs))
         end_indices.append(len(processed_data))
 
+    # Make sure the segments are sorted by start time in order to avoid duplication
+    # (i.e. lead in and lead out might cause issues)
+
+    sort_indices = np.argsort(start_indices)
+    start_indices = np.array(start_indices)[sort_indices]
+    end_indices = np.array(end_indices)[sort_indices]
+
     return combine_overlaps(list(zip(start_indices, end_indices)))
 
 

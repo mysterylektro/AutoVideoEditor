@@ -6,7 +6,7 @@ watching the clock tick down.
 
 The Auto Video Editor tool extracts audio from an input video file and sets up an audio detection mechanism to highlight
 areas where there's vocal activity. The following image shows an example of automatically detected audio events 
-(note each event is padded by 0.25 seconds):
+(note each event is padded by 0.60 seconds):
 
 <p align="center">
   <img width="640" height="480" src="https://github.com/mysterylektro/AutoVideoEditor/blob/master/resources/example_audio_detection.png?raw=true">
@@ -46,7 +46,7 @@ This tool has some fairly basic functionality, however I have plans to make addi
 
 To use the tool with all the default options, run the following command from your python project directory:
 
-> python auto-video-edit /path/to/input_video.mp4 /path/to/output_video.mp4
+> python auto-video-edit.py /path/to/input_video.mp4 /path/to/output_video.mp4
  
 The output file does not have to exist; the tool will generate the video. To modify how the tool operates, 
 use the following options:
